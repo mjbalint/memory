@@ -1,0 +1,10 @@
+.piece {
+    height: 100px;
+    width: 100px;
+    background-color: gray;
+    border-radius: 100%
+}
+
+.selected {
+    border: 4px solid black;
+}
