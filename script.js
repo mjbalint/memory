@@ -304,10 +304,15 @@ $(document).ready(function(){
      * Prepare flag data
      */
     populateFlagIds();
-    initPieces();
+    initPieces(9);
 
     // When a piece is clicked, we select it.
     $('.piece').click(function() {
+        // Ignore pieces that have already been matched or previously selected.
+        if (($(this).hasClass('selected')) || ($(this) === $lastPiece)) {
+            return;
+        }
+        
         // Reveal this piece's picture.
         var flagId = $(this).attr('id');
         $(this).css('background-image', 'url(img/flag/' + flagId + '.png)');
@@ -322,6 +327,7 @@ $(document).ready(function(){
             $lastPiece.addClass('matched');
             $(this).addClass('matched');
             $lastPiece = null;
+            $('#matches').append("<p>You found " +  flagIdToName[flagId] + "</p>");
         }  else {
             // No match. Hide the previous picture.
             $lastPiece.removeClass('selected');
