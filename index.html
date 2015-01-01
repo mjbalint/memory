@@ -9,7 +9,17 @@
 
     <body>
         <h3>It Came from the Matching Zone</h3> 
-	<div id=board></div>
-        <div id=matches></div>
+        <div id=controls>
+           <div id=reset><p>Reset</p></div>
+           <input id=scale type="range" min="0" max="8" step="1" value="3" />
+           <input id=groups type="range" min="1" max="16" step="1" value="4" />
+        </div>
+        <div>
+	    <div id=board></div>
+            <div id=matches>
+                <table id="match_table" border="none">
+                </table>
+            </div>
+        </div>
     </body>
 </html>

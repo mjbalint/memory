@@ -8,12 +8,34 @@
     display: inline-block;
 }
 
+.matchImg {
+    height: 64px;
+    width: 64px;
+    border-radius: 100%;
+}
+
 #board {
     width: 60%;
     float: left;
+    clear: left;
 }
 
 #matches {
     width: 40%;
     float: right;
+}
+
+#controls {
+    display: block;
+}
+
+#reset {
+    height: 50px;
+    width 120px;
+    border-color: #6595ED;
+    background-color: #BCD2EE;
+    border-radius: 5px;
+    margin: center;
+    text-align: center;
+    float: left;
 }

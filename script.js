@@ -1,4 +1,3 @@
-
 function Piece (name, imagePath)
 {
     this.name = name;
@@ -15,7 +14,10 @@ function PieceList (name, description)
     this.description = description;
     this.pieces = [];
 }
-PieceList.prototype.initPieces = function (numGroups = 4, groupSize = 2) {};
+PieceList.prototype.initPieces = function (numGroups = 4, groupSize = 2)
+{
+    this.pieces = [];
+};
 PieceList.prototype.setBoard  = function ($boardDiv)
 {
     // Clear any existing contents.
@@ -238,7 +240,7 @@ var flagIdToName = {
     'ua': 'Ukraine',
     'ug': 'Uganda',
     'uk': 'United Kingdom',
-    'us': 'United States',
+    'us': 'United States of America',
     'uy': 'Uruguay',
     'uz': 'Uzbekistan',
     'vc': 'Saint Vincent and the Grenadines',
@@ -330,6 +332,7 @@ FlagPieceList.prototype.initPieces = function (numGroups = 4, groupSize = 2)
     /*
      * Now we can go ahead and create the pieces. 
      */
+    this.pieces = [];
     for (var i = 0; i < orderList.length; i++) {
         var order = orderList[i];
         var flagId = orderToFlagId[order];
@@ -340,14 +343,15 @@ FlagPieceList.prototype.initPieces = function (numGroups = 4, groupSize = 2)
 var clickCount = 0;
 var prevPieceIndex = -1; 
 var boardPieces = null;
+var numGroups = 4;
 
-// Initialize web page 
-$(document).ready(function(){
-    // Prepare the pieces.
-    populateFlagIds();
+// Set up the board
+var setBoard = function ()
+{
     boardPieces = new FlagPieceList();
-    boardPieces.initPieces(10);
+    boardPieces.initPieces(numGroups);
     boardPieces.setBoard($('#board'));
+    $('#match_table').empty();
 
     // When a piece is clicked, we select it and match it against the
     // previous selection.
@@ -371,8 +375,9 @@ $(document).ready(function(){
         // Reveal this piece's picture.
         $(this).css('background-image', 'url(' + piece.imagePath + ')');
 
+        // Compare this piece to the previous one to see how to proceed.
         if (prevPieceIndex < 0) {
-            // First selection.
+            // Nothing already selected
             prevPieceIndex = pieceIndex;
         } else {
             prevPiece = boardPieces.pieces[prevPieceIndex];
@@ -381,14 +386,48 @@ $(document).ready(function(){
                 // Match!
                 prevPiece.isMatched = true;
                 piece.isMatched = true;
-                $('#matches').append("<p>You found " +
-                                     piece.getMatchString() +
-                                     "!</p>");
+                var matchImg = '<img class="matchImg" src="' +
+                             piece.imagePath +
+                             '" />';
+                var matchDescription ="<p>You found " +
+                                       piece.getMatchString() +
+                                       "!</p>";
+                $('#match_table').append(
+                    '<tr>' + 
+                        '<td>' + matchImg + '</td>' +
+                        '<td>' + matchDescription + '</td>' +
+                    '</tr>');
                 prevPieceIndex = -1;
             } else {
+                // No match. Hide the previous piece and remember this one. 
                 $('#' + prevPieceIndex).css('background-image', 'none');
                 prevPieceIndex = pieceIndex;
             }
         }
     });
+
+    $('#reset').click(function() {
+        setBoard();
+    });
+
+    $('#scale').change(function(){
+        var val = parseInt($(this).val());
+        var scale = Math.pow(2, val+4);
+        $('.piece').css({'height': scale + 'px'});
+        $('.piece').css({'width': scale + 'px'});
+    });
+
+    $('#groups').change(function(){
+        numGroups = parseInt($(this).val());
+        setBoard();
+    });
+};
+
+// Initialize web page 
+$(document).ready(function(){
+    // Prepare the pieces.
+    populateFlagIds();
+    setBoard();
+    $('#scale').val(3);
+    $('#groups').val(4);
 });
