@@ -1,5 +1,30 @@
-var clickCount = 0;
-var $lastPiece = null;
+
+function Piece (name, imagePath)
+{
+    this.name = name;
+    this.imagePath = imagePath;
+    this.isMatched = false;
+}
+Piece.prototype.getMatchString = function () {
+    return (this.name);
+};
+
+function PieceList (name, description)
+{
+    this.name = name;
+    this.description = description;
+    this.pieces = [];
+}
+PieceList.prototype.initPieces = function (numGroups = 4, groupSize = 2) {};
+PieceList.prototype.setBoard  = function ($boardDiv)
+{
+    // Clear any existing contents.
+    $boardDiv.empty();
+
+    for (var i = 0; i < this.pieces.length; i++) {
+        $boardDiv.append('<div class="piece" id="' + i + '"></div>');
+    }
+}
 
 var flagIdToName = {  
     'ad': 'Andorra',
@@ -247,8 +272,23 @@ var getRandomFlag = function ()
     return (flagId);
 };
 
-// Reset the gameboard
-var initPieces = function (numGroups = 4, groupSize = 2)
+function FlagPiece (flagId)
+{
+    this.name = flagIdToName[flagId];
+    this.imagePath = 'img/flag/' + flagId + '.png'; 
+}
+FlagPiece.prototype = new Piece();
+FlagPiece.prototype.getMatchString = function () {
+    return ('the flag of ' + this.name);
+};
+
+function FlagPieceList ()
+{
+    this.name = 'flags';
+    this.description = 'Flags of the world';
+}
+FlagPieceList.prototype = new PieceList();
+FlagPieceList.prototype.initPieces = function (numGroups = 4, groupSize = 2)
 {
     /*
      * Choose the flag to use for each group and then assign a random
@@ -288,52 +328,67 @@ var initPieces = function (numGroups = 4, groupSize = 2)
     orderList.sort();
 
     /*
-     * Now we can go ahead and create the game pieces.
+     * Now we can go ahead and create the pieces. 
      */
-    var $board = $('#board');
     for (var i = 0; i < orderList.length; i++) {
         var order = orderList[i];
         var flagId = orderToFlagId[order];
-        $board.append('<div class="piece" id="' + flagId + '"></div>');
+        this.pieces.push(new FlagPiece(flagId));
     }
 }
 
+var clickCount = 0;
+var prevPieceIndex = -1; 
+var boardPieces = null;
+
 // Initialize web page 
 $(document).ready(function(){
-    /*
-     * Prepare flag data
-     */
+    // Prepare the pieces.
     populateFlagIds();
-    initPieces(9);
+    boardPieces = new FlagPieceList();
+    boardPieces.initPieces(10);
+    boardPieces.setBoard($('#board'));
 
-    // When a piece is clicked, we select it.
+    // When a piece is clicked, we select it and match it against the
+    // previous selection.
     $('.piece').click(function() {
-        // Ignore pieces that have already been matched or previously selected.
-        if (($(this).hasClass('selected')) || ($(this) === $lastPiece)) {
+        var pieceIndex = $(this).attr('id');
+        var piece = boardPieces.pieces[pieceIndex];
+
+        // Ignore clicks on already matched pieces.
+        if (piece.isMatched) {
             return;
         }
-        
-        // Reveal this piece's picture.
-        var flagId = $(this).attr('id');
-        $(this).css('background-image', 'url(img/flag/' + flagId + '.png)');
 
-        if (null === $lastPiece) {
-            // This is the first piece revealed. Just remember it.
-            $(this).addClass('selected');
-            $lastPiece = $(this);
-        } else if ($lastPiece.attr('id') === flagId) {
-            // Match!
-            $lastPiece.removeClass('selected');
-            $lastPiece.addClass('matched');
-            $(this).addClass('matched');
-            $lastPiece = null;
-            $('#matches').append("<p>You found " +  flagIdToName[flagId] + "</p>");
-        }  else {
-            // No match. Hide the previous picture.
-            $lastPiece.removeClass('selected');
-            $lastPiece.css('background-image', 'none');
-            $(this).addClass('selected');
-            $lastPiece = $(this);
+        // A second click on the same unmatched piece clears the selection.
+        if (prevPieceIndex === pieceIndex) {
+            // A second click clears the selection.
+            $(this).css('background-image', 'none');
+            prevPieceIndex = -1;
+            return;
+        }
+
+        // Reveal this piece's picture.
+        $(this).css('background-image', 'url(' + piece.imagePath + ')');
+
+        if (prevPieceIndex < 0) {
+            // First selection.
+            prevPieceIndex = pieceIndex;
+        } else {
+            prevPiece = boardPieces.pieces[prevPieceIndex];
+
+            if (prevPiece.name === piece.name) {
+                // Match!
+                prevPiece.isMatched = true;
+                piece.isMatched = true;
+                $('#matches').append("<p>You found " +
+                                     piece.getMatchString() +
+                                     "!</p>");
+                prevPieceIndex = -1;
+            } else {
+                $('#' + prevPieceIndex).css('background-image', 'none');
+                prevPieceIndex = pieceIndex;
+            }
         }
     });
 });

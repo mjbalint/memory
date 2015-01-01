@@ -1,19 +1,11 @@
 .piece {
-    height: 256px;
-    width: 256px;
+    height: 128px;
+    width: 128px;
     background-color: gray;
     background-repeat: no-repeat;
     background-size: cover;
     border-radius: 100%;
     display: inline-block;
-}
-
-.selected {
-    border: 4px dashed black;
-}
-
-.matched {
-    border: 4px solid green;
 }
 
 #board {
